@@ -1,0 +1,203 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+
+  /* Brand palette — MANUFA Green / Yellow */
+  --color-green:        #00A651;
+  --color-green-light:  #FFD700;
+  --color-green-dark:   #008741;
+  --color-green-muted:  #00A65120;
+
+  /* Dark surface scale */
+  --color-bg-base:     #09090A;
+  --color-bg-surface:  #111113;
+  --color-bg-card:     #18181B;
+  --color-bg-elevated: #202024;
+
+  /* Text */
+  --color-text-primary:   #F4F4F5;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted:     #52525B;
+
+  /* Borders */
+  --color-border:       #27272A;
+  --color-border-light: #3F3F46;
+}
+
+/* ── Reset / Base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-bg-base); }
+::-webkit-scrollbar-thumb { background: var(--color-border-light); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-green); }
+
+/* ── Selection ── */
+::selection { background: var(--color-green); color: #fff; }
+
+/* ── Green gradient text ── */
+.text-gradient {
+  background: linear-gradient(135deg, #00A651 0%, #FFD700 50%, #FFEB3B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Green glow ── */
+.glow-green {
+  box-shadow: 0 0 40px rgba(0, 166, 81, 0.25), 0 0 80px rgba(0, 166, 81, 0.10);
+}
+
+/* ── Network dot pattern background ── */
+.network-bg {
+  background-image:
+    radial-gradient(circle, rgba(0,166,81,0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ── Card hover lift ── */
+.card-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,166,81,0.15);
+  border-color: rgba(0,166,81,0.3);
+}
+
+/* ── Button ── */
+.btn-primary {
+  background: linear-gradient(135deg, #00A651, #008741);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px rgba(0,166,81,0.4);
+}
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-primary);
+  font-weight: 500;
+  border-radius: 6px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.btn-secondary:hover {
+  border-color: var(--color-green);
+  background: rgba(0,166,81,0.06);
+}
+
+/* ── Section divider line ── */
+.section-line {
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, #00A651, #FFD700);
+  border-radius: 2px;
+}
+
+/* ── Noise texture overlay ── */
+.noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* ── Scroll offset for fixed header ── */
+[id] {
+  scroll-margin-top: 80px;
+}
+
+/* ── Body entrance fade ── */
+@keyframes bodyFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+body {
+  animation: bodyFadeIn 0.5s ease-out;
+}
+
+/* ── Animate fade-up ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { opacity: 0; animation: fadeUp 0.7s ease forwards; }
+.animation-delay-100 { animation-delay: 0.1s; }
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-300 { animation-delay: 0.3s; }
+.animation-delay-400 { animation-delay: 0.4s; }
+.animation-delay-500 { animation-delay: 0.5s; }
+
+/* ── Reduced-motion accessibility ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  body { animation: none; }
+  .animate-fade-up { opacity: 1; }
+}
+
+/* ── Sector Card Image Cross-Fade Animations ── */
+@keyframes fade-cycle-1 {
+  0%, 45% { opacity: 0.8; }
+  50%, 95% { opacity: 0; }
+  100% { opacity: 0.8; }
+}
+@keyframes fade-cycle-2 {
+  0%, 45% { opacity: 0; }
+  50%, 95% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@keyframes fade-cycle-1-hover {
+  0%, 45% { opacity: 1; }
+  50%, 95% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes fade-cycle-2-hover {
+  0%, 45% { opacity: 0; }
+  50%, 95% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.animate-fade-cycle-1 {
+  animation: fade-cycle-1 6s infinite ease-in-out;
+}
+.animate-fade-cycle-2 {
+  animation: fade-cycle-2 6s infinite ease-in-out;
+}
+
+.group:hover .animate-fade-cycle-1 {
+  animation-name: fade-cycle-1-hover;
+}
+.group:hover .animate-fade-cycle-2 {
+  animation-name: fade-cycle-2-hover;
+}

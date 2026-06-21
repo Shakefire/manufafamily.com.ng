@@ -1,0 +1,8 @@
+{
+  "name": "Echelon Wireframe Studio",
+  "description": "An interactive wireframe viewer and spatial layout inspector for the Echelon luxury event agency landing page, detailing its landing page grid system and navigation architecture.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
