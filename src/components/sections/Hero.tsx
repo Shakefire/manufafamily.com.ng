@@ -73,19 +73,24 @@ export const Hero = () => {
         <div className="md:col-span-7 space-y-6">
           <div className="space-y-3">
             <motion.div
-              className="flex items-center gap-2"
+              className="flex flex-col gap-2"
               variants={lineVariant}
               initial="hidden"
               animate="visible"
               custom={0}
             >
-              <span className="w-6 h-px bg-[#00A651]" />
-              <span className="font-mono text-[10px] text-[#7F7F7F] tracking-[0.25em] uppercase font-semibold">
-                MANUFA FAMILY INVESTMENT LTD
-              </span>
-              <span className="font-mono text-[9px] text-[#00A651] tracking-wider font-semibold">
-                Founded February 1st, 2023
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-px bg-[#00A651]" />
+                <span className="font-mono text-[10px] text-[#7F7F7F] tracking-[0.25em] uppercase font-semibold">
+                  MANUFA FAMILY INVESTMENT LTD
+                </span>
+              </div>
+              <div className="flex items-center gap-2 pl-8">
+                <span className="inline-block w-2 h-2 rounded-full bg-[#00A651]" />
+                <span className="font-mono text-xs sm:text-sm text-[#00A651] tracking-wider font-bold">
+                  Since February 1st, 2023
+                </span>
+              </div>
             </motion.div>
 
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-[#1A1A1A] font-light tracking-tight leading-[1.2] flex flex-col gap-1.5">
