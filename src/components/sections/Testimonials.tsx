@@ -22,6 +22,54 @@ const testimonials = [
     client: "Faruq Abubakar",
     org: "Secretary",
     service: "Wealth Creation",
+  },
+  {
+    quote: "As a small business owner, having a disciplined savings structure was exactly what I needed. MANUFA helped me pool resources with trusted community members, and the returns on our collective investments have been steady and reliable. Wanda ala alheri ne.",
+    client: "Salihu Adam & Saeed",
+    org: "Business Partners",
+    service: "Collective Investments",
+  },
+  {
+    quote: "What drew me to MANUFA was the sharia-compliant approach to savings and investments. No riba, complete transparency, and every kobo is accounted for. The weekly meetings keep us connected and accountable to one another.",
+    client: "Hassan Attahiru",
+    org: "Compliance Officer",
+    service: "Ethical Savings",
+  },
+  {
+    quote: "I have been with MANUFA since the early days and watched it grow from a small circle of friends into a real community fund. The leadership listens to every member, and our contributions are working hard for us. Nagode sosai ga jagoranci.",
+    client: "Isa Sale Isa",
+    org: "Founding Member",
+    service: "Community Growth",
+  },
+  {
+    quote: "The emergency support from MANUFA when my family had a medical situation was beyond what I expected. Knowing that my savings are not locked away but accessible when life happens gives me real confidence in this system.",
+    client: "Usman Muhammad",
+    org: "Savings Member",
+    service: "Emergency Savings",
+  },
+  {
+    quote: "I used to struggle keeping consistent savings on my own. But the group accountability in MANUFA changed everything. Now I never miss a contribution, and the quarterly cashouts have helped me invest in my children's education.",
+    client: "Abdurrashid N Nasiru",
+    org: "Active Saver",
+    service: "Education Fund",
+  },
+  {
+    quote: "The beauty of MANUFA is that it is owned by us, the members. Every investment decision is put to a vote, and profits are shared according to what each person put in. That is true financial inclusion, wallahi.",
+    client: "Abdallah A Musa",
+    org: "Member Representative",
+    service: "Democratic Finance",
+  },
+  {
+    quote: "Coming from a background in agriculture, I was looking for a savings group that understands our seasonal income patterns. MANUFA allowed me to adjust my contributions during harvest and scale down in lean months. Very flexible and understanding.",
+    client: "Aminu Abubakar",
+    org: "Farmer Member",
+    service: "Flexible Savings",
+  },
+  {
+    quote: "MANUFA small small dey change my life. Before I no fit save anything, money just finish. Now with the weekly contribution and my people dey together, I see my money dey grow. Na God.",
+    client: "Abota",
+    org: "Regular Contributor",
+    service: "Weekly Savings",
   }
 ];
 

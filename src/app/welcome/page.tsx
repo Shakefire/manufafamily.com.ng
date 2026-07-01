@@ -33,6 +33,10 @@ export default function WelcomePage() {
 
   const completionPercent = profile?.profile_completion_percent ?? 0;
   const displayName = profile?.full_name ?? user?.user_metadata?.full_name ?? 'Valued Investor';
+  const isCompanyAccount = profile?.registration_type === 'company' || user?.user_metadata?.registration_type === 'company';
+  const onboardingHint = isCompanyAccount
+    ? 'To complete onboarding, please provide your company information and payout bank details.'
+    : 'To make investments and save, please fill out your profile details (Personal Info, Address, Next of Kin, and Bank Details).';
 
   return (
     <div className="min-h-screen bg-[#FFFFFF] flex flex-col justify-between relative overflow-hidden">
@@ -126,7 +130,7 @@ export default function WelcomePage() {
                 <div>
                   <h4 className="font-sans text-xs font-semibold text-[#1A1A1A]">Onboarding Required</h4>
                   <p className="font-sans text-[11px] text-[#7F7F7F] mt-0.5">
-                    To make investments and save, please fill out your profile details (Personal Info, Address, Next of Kin, Beneficiary).
+                    {onboardingHint}
                   </p>
                 </div>
               </div>

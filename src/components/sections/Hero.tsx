@@ -83,6 +83,9 @@ export const Hero = () => {
               <span className="font-mono text-[10px] text-[#7F7F7F] tracking-[0.25em] uppercase font-semibold">
                 MANUFA FAMILY INVESTMENT LTD
               </span>
+              <span className="font-mono text-[9px] text-[#00A651] tracking-wider font-semibold">
+                Founded February 1st, 2023
+              </span>
             </motion.div>
 
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-[#1A1A1A] font-light tracking-tight leading-[1.2] flex flex-col gap-1.5">

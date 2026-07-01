@@ -7,6 +7,12 @@ import { useRouter, usePathname } from 'next/navigation';
 export interface Profile {
   id: string;
   full_name: string;
+  registration_type: 'individual' | 'company';
+  company_name: string | null;
+  company_registration_number: string | null;
+  company_email: string | null;
+  company_type: string | null;
+  registered_office_address: string | null;
   phone: string | null;
   date_of_birth: string | null;
   gender: string | null;
@@ -16,9 +22,9 @@ export interface Profile {
   next_of_kin_name: string | null;
   next_of_kin_phone: string | null;
   next_of_kin_relationship: string | null;
-  beneficiary_name: string | null;
-  beneficiary_phone: string | null;
-  beneficiary_relationship: string | null;
+  bank_name: string | null;
+  bank_account_name: string | null;
+  bank_account_number: string | null;
   profile_completion_percent: number;
   status: 'pending_registration' | 'active_basic' | 'profile_incomplete' | 'pending_approval' | 'approved' | 'suspended';
   role: 'user' | 'admin';
@@ -142,12 +148,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user, profile, pathname, loading]);
 
   const signOut = async () => {
-    setLoading(true);
-    await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
-    setLoading(false);
     router.push('/');
+    await supabase.auth.signOut();
   };
 
   return (

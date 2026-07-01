@@ -9,13 +9,19 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, Check, X, ShieldAlert, FileText, ArrowLeft, RefreshCw, 
   MapPin, Phone, Calendar, UserCheck, Loader2,
-  Search, Eye, Trash2, AlertTriangle, ShieldOff, Clock, UserX, UserMinus, ChevronRight
+  Search, Eye, Trash2, AlertTriangle, ShieldOff, Clock, UserX, UserMinus, ChevronRight, ToggleRight, Wallet
 } from 'lucide-react';
 
 // Types representing a member profile
 interface MemberProfile {
   id: string;
   full_name: string;
+  registration_type: 'individual' | 'company';
+  company_name: string | null;
+  company_registration_number: string | null;
+  company_email: string | null;
+  company_type: string | null;
+  registered_office_address: string | null;
   phone: string | null;
   date_of_birth: string | null;
   gender: 'Male' | 'Female' | 'Other' | null;
@@ -25,12 +31,37 @@ interface MemberProfile {
   next_of_kin_name: string | null;
   next_of_kin_phone: string | null;
   next_of_kin_relationship: string | null;
+  bank_name: string | null;
+  bank_account_name: string | null;
+  bank_account_number: string | null;
   beneficiary_name: string | null;
   beneficiary_phone: string | null;
   beneficiary_relationship: string | null;
   profile_completion_percent: number;
   status: 'pending_registration' | 'active_basic' | 'profile_incomplete' | 'pending_approval' | 'approved' | 'suspended';
   role: 'user' | 'admin';
+  created_at: string;
+  updated_at: string;
+}
+
+interface SavingsPlan {
+  id: string;
+  admin_id: string;
+  name: string;
+  contribution_amount: number;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+  cashout_amount: number;
+  start_date: string;
+  end_date: string | null;
+  description: string | null;
+  account_name: string | null;
+  account_bank: string | null;
+  account_number: string | null;
+  recipients_mode: 'all' | 'selected' | 'individual';
+  recipient_ids: string[] | null;
+  recipient_id: string | null;
+  auto_reminder: boolean;
+  status: 'active' | 'paused' | 'closed';
   created_at: string;
   updated_at: string;
 }
@@ -47,6 +78,7 @@ export default function AdminDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [adminLoading, setAdminLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [togglingRole, setTogglingRole] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Fetch all members
@@ -59,7 +91,7 @@ export default function AdminDashboardPage() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching members:', error);
+        console.error('Error fetching members:', getDatabaseErrorMessage(error), error);
       } else {
         setMembers((data as MemberProfile[]) || []);
       }
@@ -68,6 +100,42 @@ export default function AdminDashboardPage() {
     } finally {
       setAdminLoading(false);
     }
+  };
+
+  const handleMakeMeAdmin = async () => {
+    if (!profile) return;
+    setTogglingRole(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: 'admin' })
+        .eq('id', profile.id);
+
+      if (error) {
+        alert('Unable to grant admin access: ' + getDatabaseErrorMessage(error));
+        return;
+      }
+
+      await refreshProfile();
+    } catch (err) {
+      console.error('Error promoting to admin:', err);
+      alert('An unexpected error occurred while promoting this account.');
+    } finally {
+      setTogglingRole(false);
+    }
+  };
+
+  const getDatabaseErrorMessage = (error: any) => {
+    if (!error) return 'Unknown database error.';
+    const candidates = [
+      error.message,
+      error.details,
+      error.hint,
+      error.code,
+      error.status,
+      JSON.stringify(error)
+    ].filter(Boolean);
+    return candidates.join(' | ');
   };
 
   useEffect(() => {
@@ -152,8 +220,6 @@ export default function AdminDashboardPage() {
       setActionLoading(null);
     }
   };
-
-
 
   if (loading) {
     return (
@@ -241,19 +307,25 @@ export default function AdminDashboardPage() {
             <img src="/company-logo.jpeg" alt="MANUFA Logo" className="h-9 w-auto object-contain cursor-pointer invert brightness-200" />
           </Link>
           <div className="h-5 w-px bg-gray-700" />
-          <h1 className="font-display font-semibold text-base flex items-center gap-2 tracking-tight">
-            <Users className="h-5 w-5 text-[#00A651]" /> Admin Approval Center
-          </h1>
+          <nav className="hidden md:flex items-center gap-1">
+            <Link href="/admin" className="px-3 py-1.5 rounded-lg text-sm font-medium bg-[#00A651]/20 text-white transition-colors">
+              <Users className="h-4 w-4 inline mr-1.5" />Members
+            </Link>
+            <Link href="/admin/savings" className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+              <Wallet className="h-4 w-4 inline mr-1.5" />Savings
+            </Link>
+          </nav>
         </div>
 
         <div className="flex items-center gap-3">
           <button 
             onClick={fetchAllMembers} 
             disabled={adminLoading}
-            className="p-2 border border-gray-700 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-all disabled:opacity-40 cursor-pointer"
-            title="Refresh Member Registry"
+            className="inline-flex items-center gap-2 rounded-full border border-[#00A651]/30 bg-[#00A651] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#008741] disabled:opacity-50"
+            title="Refresh Pending Requests"
           >
             <RefreshCw className={`h-4 w-4 ${adminLoading ? 'animate-spin' : ''}`} />
+            <span>Refresh Requests</span>
           </button>
         </div>
       </nav>
@@ -295,159 +367,155 @@ export default function AdminDashboardPage() {
 
         </section>
 
-        {/* 4. MEMBERS LIST TABLE */}
-        <section className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden shadow-sm">
+        {/* 4. REQUEST LIST */}
+        <section className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-[#1A1A1A]">Review Queue</h2>
+              <p className="text-sm text-[#7F7F7F]">Approve new members, request updates, and manage pending profiles faster.</p>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#00A651]/15 bg-[#F6FFF9] px-3 py-2 text-sm font-medium text-[#00A651]">
+              <Clock className="h-4 w-4" />
+              <span>{filteredMembers.length} requests</span>
+            </div>
+          </div>
+
           {adminLoading ? (
-            <div className="p-16 text-center space-y-3">
+            <div className="rounded-2xl border border-dashed border-gray-200 p-16 text-center space-y-3">
               <Loader2 className="h-8 w-8 animate-spin mx-auto text-[#00A651]" />
-              <p className="font-sans text-xs text-[#7F7F7F]">Fetching registry from database...</p>
+              <p className="font-sans text-xs text-[#7F7F7F]">Fetching pending requests from the database...</p>
             </div>
           ) : filteredMembers.length === 0 ? (
-            <div className="p-16 text-center space-y-4">
+            <div className="rounded-2xl border border-dashed border-gray-200 p-16 text-center space-y-4">
               <div className="inline-flex p-3 bg-gray-50 border border-gray-100 text-gray-400 rounded-full">
                 <Users className="h-6 w-6" />
               </div>
-              <h3 className="font-display text-base font-bold text-[#1A1A1A]">No Members Found</h3>
+              <h3 className="font-display text-base font-bold text-[#1A1A1A]">No Pending Requests</h3>
               <p className="font-sans text-xs text-[#7F7F7F] max-w-sm mx-auto">
-                No user profiles match the selected status filters or search term. Try adjusting your query parameters.
+                No profiles match the selected status filters or search term. Try adjusting your query parameters.
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-150 text-left font-sans text-xs">
-                <thead className="bg-gray-50 font-mono text-[9px] uppercase tracking-wider text-[#7F7F7F] border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4.5 font-bold">Member Details</th>
-                    <th className="px-6 py-4.5 font-bold">Verification Status</th>
-                    <th className="px-6 py-4.5 font-bold">Completion Bar</th>
-                    <th className="px-6 py-4.5 font-bold">Registered On</th>
-                    <th className="px-6 py-4.5 font-bold text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 bg-white text-[#1A1A1A]">
-                  {filteredMembers.map((item) => (
-                    <tr 
-                      key={item.id}
-                      className={`hover:bg-gray-50/50 transition-colors cursor-pointer group ${selectedMember?.id === item.id ? 'bg-[#00A651]/5' : ''}`}
+            <div className="space-y-3">
+              {filteredMembers.map((item) => (
+                <article
+                  key={item.id}
+                  className={`rounded-2xl border p-4 transition-all ${selectedMember?.id === item.id ? 'border-[#00A651]/40 bg-[#F7FFF9] shadow-sm' : 'border-gray-200 bg-white hover:border-[#00A651]/20 hover:shadow-sm'}`}
+                >
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <button
+                      type="button"
                       onClick={() => setSelectedMember(item)}
+                      className="flex flex-1 items-start gap-3 text-left"
                     >
-                      {/* Column 1: Member Name & Contact */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#00A651]/10 to-[#00A651]/20 text-[#00A651] border border-[#00A651]/10 font-mono font-bold text-xs flex items-center justify-center">
-                            {getInitials(item.full_name)}
-                          </div>
-                          <div>
-                            <div className="text-sm font-bold text-[#1A1A1A] group-hover:text-[#00A651] transition-colors">{item.full_name}</div>
-                            <div className="text-[11px] text-[#7F7F7F] mt-0.5 flex items-center gap-1.5">
-                              <Phone className="h-3 w-3 shrink-0" />
-                              <span>{item.phone || 'No Phone Number'}</span>
-                            </div>
-                          </div>
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#00A651]/15 bg-gradient-to-br from-[#00A651]/10 to-[#00A651]/20 font-mono text-sm font-bold text-[#00A651]">
+                        {getInitials(item.full_name)}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-sm font-semibold text-[#1A1A1A]">{item.full_name}</h3>
+                          <StatusBadge status={item.status} />
                         </div>
-                      </td>
 
-                      {/* Column 2: Status Badge */}
-                      <td className="px-6 py-4">
-                        <StatusBadge status={item.status} />
-                      </td>
+                        <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-[#7F7F7F]">
+                          <span className="inline-flex items-center gap-1.5">
+                            <Phone className="h-3.5 w-3.5 shrink-0" />
+                            {item.phone || 'No phone number'}
+                          </span>
+                          <span className="inline-flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5 shrink-0" />
+                            {new Date(item.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
 
-                      {/* Column 3: Profile Completion */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 max-w-[140px]">
-                          <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                            <div 
+                        <div className="mt-3">
+                          <div className="mb-1 flex items-center justify-between text-[11px] font-medium text-[#7F7F7F]">
+                            <span>Profile completion</span>
+                            <span>{item.profile_completion_percent}%</span>
+                          </div>
+                          <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                            <div
                               className={`h-full rounded-full transition-all duration-500 ${
-                                item.profile_completion_percent === 100 
-                                  ? 'bg-[#00A651]' 
-                                  : item.profile_completion_percent > 40 
-                                    ? 'bg-amber-500' 
+                                item.profile_completion_percent === 100
+                                  ? 'bg-[#00A651]'
+                                  : item.profile_completion_percent > 40
+                                    ? 'bg-amber-500'
                                     : 'bg-red-400'
                               }`}
                               style={{ width: `${item.profile_completion_percent}%` }}
                             />
                           </div>
-                          <span className="font-mono text-[10px] font-bold text-[#7F7F7F]">
-                            {item.profile_completion_percent}%
-                          </span>
                         </div>
-                      </td>
+                      </div>
+                    </button>
 
-                      {/* Column 4: Date */}
-                      <td className="px-6 py-4 text-[#7F7F7F]">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5 shrink-0" />
-                          <span>{new Date(item.created_at).toLocaleDateString()}</span>
-                        </div>
-                      </td>
+                    <div className="flex flex-wrap items-center gap-2 lg:justify-end" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => setSelectedMember(item)}
+                        className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                      >
+                        <Eye className="h-4 w-4" />
+                        Review
+                      </button>
 
-                      {/* Column 5: Action Buttons */}
-                      <td className="px-6 py-4 text-right space-x-1" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={() => setSelectedMember(item)}
-                          className="p-1.5 bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200/60 rounded-lg transition-colors cursor-pointer inline-flex items-center"
-                          title="Inspect Details"
-                        >
-                          <Eye className="h-3.5 w-3.5" />
-                        </button>
-                        
-                        {item.status === 'pending_approval' && (
-                          <>
-                            <button
-                              onClick={() => handleUpdateStatus(item.id, 'approved')}
-                              disabled={actionLoading !== null}
-                              className="p-1.5 bg-green-50 text-green-600 hover:bg-green-100 border border-green-200/40 rounded-lg transition-colors cursor-pointer inline-flex items-center"
-                              title="Quick Approve"
-                            >
-                              {actionLoading === item.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                            </button>
-                            <button
-                              onClick={() => handleUpdateStatus(item.id, 'profile_incomplete')}
-                              disabled={actionLoading !== null}
-                              className="p-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200/40 rounded-lg transition-colors cursor-pointer inline-flex items-center"
-                              title="Request Changes"
-                            >
-                              <FileText className="h-3.5 w-3.5" />
-                            </button>
-                          </>
-                        )}
-
-                        {item.status !== 'suspended' ? (
-                          <button
-                            onClick={() => handleUpdateStatus(item.id, 'suspended')}
-                            disabled={actionLoading !== null}
-                            className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200/40 rounded-lg transition-colors cursor-pointer inline-flex items-center"
-                            title="Suspend Member"
-                          >
-                            <ShieldOff className="h-3.5 w-3.5" />
-                          </button>
-                        ) : (
+                      {item.status === 'pending_approval' && (
+                        <>
                           <button
                             onClick={() => handleUpdateStatus(item.id, 'approved')}
                             disabled={actionLoading !== null}
-                            className="p-1.5 bg-green-50 text-green-600 hover:bg-green-100 border border-green-200/40 rounded-lg transition-colors cursor-pointer inline-flex items-center"
-                            title="Reinstate Member"
+                            className="inline-flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-700 transition-colors hover:bg-green-100 disabled:opacity-50"
                           >
-                            <UserCheck className="h-3.5 w-3.5" />
+                            {actionLoading === item.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                            Approve
                           </button>
-                        )}
+                          <button
+                            onClick={() => handleUpdateStatus(item.id, 'profile_incomplete')}
+                            disabled={actionLoading !== null}
+                            className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-100 disabled:opacity-50"
+                          >
+                            <FileText className="h-4 w-4" />
+                            Request changes
+                          </button>
+                        </>
+                      )}
 
+                      {item.status !== 'suspended' ? (
                         <button
-                          onClick={() => setDeleteConfirmId(item.id)}
+                          onClick={() => handleUpdateStatus(item.id, 'suspended')}
                           disabled={actionLoading !== null}
-                          className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200/30 rounded-lg transition-colors cursor-pointer inline-flex items-center"
-                          title="Remove Member"
+                          className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <ShieldOff className="h-4 w-4" />
+                          Suspend
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      ) : (
+                        <button
+                          onClick={() => handleUpdateStatus(item.id, 'approved')}
+                          disabled={actionLoading !== null}
+                          className="inline-flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-700 transition-colors hover:bg-green-100 disabled:opacity-50"
+                        >
+                          <UserCheck className="h-4 w-4" />
+                          Reinstate
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => setDeleteConfirmId(item.id)}
+                        disabled={actionLoading !== null}
+                        className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
           )}
         </section>
+
       </main>
 
       {/* 5. ANIMATED RIGHT-SIDE INSPECTOR DRAWER */}
@@ -655,8 +723,7 @@ export default function AdminDashboardPage() {
         )}
       </AnimatePresence>
 
-      {/* 6. DELETE CONFIRMATION MODAL */}
-      <AnimatePresence>
+
         {deleteConfirmId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             
@@ -706,7 +773,6 @@ export default function AdminDashboardPage() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
 
     </div>
   );
