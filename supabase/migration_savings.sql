@@ -97,6 +97,10 @@ DROP POLICY IF EXISTS "Allow select for owners and admins" ON public.profiles;
 CREATE POLICY "Allow select for owners and admins" ON public.profiles
   FOR SELECT USING (auth.uid() = id OR public.is_admin());
 
+DROP POLICY IF EXISTS "Public can view approved profiles" ON public.profiles;
+CREATE POLICY "Public can view approved profiles" ON public.profiles
+  FOR SELECT USING (status = 'approved');
+
 DROP POLICY IF EXISTS "Allow update for owners and admins" ON public.profiles;
 CREATE POLICY "Allow update for owners and admins" ON public.profiles
   FOR UPDATE USING (auth.uid() = id OR public.is_admin());

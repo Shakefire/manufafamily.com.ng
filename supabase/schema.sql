@@ -2,6 +2,22 @@
 DROP TRIGGER IF EXISTS trigger_protect_admin_fields ON public.profiles;
 DROP TRIGGER IF EXISTS trigger_calculate_profile_completion ON public.profiles;
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP TRIGGER IF EXISTS trg_on_auth_user_created ON auth.users;
+
+DROP POLICY IF EXISTS "Admins can manage savings plans" ON public.savings_plans;
+DROP POLICY IF EXISTS "Admins can view savings plans" ON public.savings_plans;
+DROP POLICY IF EXISTS "Users can view savings plans" ON public.savings_plans;
+DROP POLICY IF EXISTS "Admins can create savings plans" ON public.savings_plans;
+DROP POLICY IF EXISTS "Admins can update savings plans" ON public.savings_plans;
+DROP POLICY IF EXISTS "Admins can delete savings plans" ON public.savings_plans;
+DROP POLICY IF EXISTS "Owner or admin can read notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Admins can insert notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Admins can update notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Admins can delete notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Allow select for owners and admins" ON public.profiles;
+DROP POLICY IF EXISTS "Allow public read of approved profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Allow update for owners and admins" ON public.profiles;
+DROP POLICY IF EXISTS "Admins can delete profiles" ON public.profiles;
 
 DROP FUNCTION IF EXISTS public.protect_admin_fields();
 DROP FUNCTION IF EXISTS public.calculate_profile_completion();
@@ -126,10 +142,14 @@ CREATE POLICY "Admins can insert notifications" ON public.notifications
   FOR INSERT
   WITH CHECK (public.is_admin());
 
-CREATE POLICY "Admins can manage notifications" ON public.notifications
-  FOR UPDATE, DELETE
+CREATE POLICY "Admins can update notifications" ON public.notifications
+  FOR UPDATE
   USING (public.is_admin())
   WITH CHECK (public.is_admin());
+
+CREATE POLICY "Admins can delete notifications" ON public.notifications
+  FOR DELETE
+  USING (public.is_admin());
 
 -- Enable Row Level Security (RLS) for profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -137,6 +157,11 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow select for owners and admins" ON public.profiles
   FOR SELECT USING (
     auth.uid() = id OR public.is_admin()
+  );
+
+CREATE POLICY "Allow public read of approved profiles" ON public.profiles
+  FOR SELECT USING (
+    status = 'approved'
   );
 
 CREATE POLICY "Allow update for owners and admins" ON public.profiles

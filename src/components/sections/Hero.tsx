@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AnimatedCounter } from '../animations/AnimatedCounter';
+import { createClient } from '@/utils/supabase/client';
 
 const HERO_IMAGES = ['/1.png', '/2.jpg'];
 const INTERVAL_MS = 4000; // each image shows for 4 s
@@ -12,6 +13,8 @@ const stagger = (i: number) => ({ delay: 0.15 + i * 0.12 });
 
 export const Hero = () => {
   const [active, setActive] = useState(0);
+  const [memberCount, setMemberCount] = useState(500);
+  const supabase = createClient();
 
 
   useEffect(() => {
@@ -20,6 +23,26 @@ export const Hero = () => {
     }, INTERVAL_MS);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const fetchMemberCount = async () => {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'approved');
+
+      if (error) {
+        console.error('Failed to load approved member count:', error);
+        return;
+      }
+
+      if (typeof count === 'number') {
+        setMemberCount(count);
+      }
+    };
+
+    void fetchMemberCount();
+  }, [supabase]);
 
   const lineVariant = {
     hidden: { opacity: 0, y: 35 },
@@ -174,7 +197,7 @@ export const Hero = () => {
           >
             <div>
               <span className="block font-mono text-[10px] text-[#7F7F7F] uppercase tracking-widest">Members Joined</span>
-              <AnimatedCounter target={500} suffix="+ Active" className="text-xs text-[#1A1A1A] font-semibold tracking-tight font-display" duration={2} />
+              <AnimatedCounter target={memberCount} suffix="+ Active" className="text-xs text-[#1A1A1A] font-semibold tracking-tight font-display" duration={2} />
             </div>
             <div>
               <span className="block font-mono text-[10px] text-[#7F7F7F] uppercase tracking-widest">Savings Cycle</span>
